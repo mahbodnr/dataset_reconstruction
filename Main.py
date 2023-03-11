@@ -149,12 +149,17 @@ def train(args, train_loader, test_loader, val_loader, model):
             break
 
         if args.train_save_model_every > 0 and epoch % args.train_save_model_every == 0:
-            save_weights(
+            weights_fpath = save_weights(
                 os.path.join(args.output_dir, "weights"),
                 model,
                 ext_text=args.model_name,
                 epoch=epoch,
             )
+            if args.wandb_active:
+                wandb.save(
+                    weights_fpath,
+                    base_path=args.wandb_base_path,
+                )
 
     print(now(), "ENDED TRAINING")
     return model
@@ -240,10 +245,6 @@ def data_extraction(args, dataset_loader, model):
         ) or (args.extract_save_results and epoch % args.extraction_evaluate_rate == 0):
             torch.save(x, os.path.join(args.output_dir, "x", f"{epoch}_x.pth"))
             torch.save(l, os.path.join(args.output_dir, "l", f"{epoch}_l.pth"))
-            torch.save(
-                model.state_dict(),
-                os.path.join(args.output_dir, "model", f"{epoch}_model.pth"),
-            )
             if args.wandb_active:
                 wandb.save(
                     os.path.join(args.output_dir, "x", f"{epoch}_x.pth"),
@@ -251,10 +252,6 @@ def data_extraction(args, dataset_loader, model):
                 )
                 wandb.save(
                     os.path.join(args.output_dir, "l", f"{epoch}_l.pth"),
-                    base_path=args.wandb_base_path,
-                )
-                wandb.save(
-                    os.path.join(args.output_dir, "model", f"{epoch}_model.pth"),
                     base_path=args.wandb_base_path,
                 )
 
@@ -268,7 +265,6 @@ def create_dirs_save_files(args):
         os.makedirs(os.path.join(args.output_dir, "weights"), exist_ok=True)
         os.makedirs(os.path.join(args.output_dir, "x"), exist_ok=True)
         os.makedirs(os.path.join(args.output_dir, "l"), exist_ok=True)
-        os.makedirs(os.path.join(args.output_dir, "model"), exist_ok=True)
 
     if args.save_args_files:
         # save args
