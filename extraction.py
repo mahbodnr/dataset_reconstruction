@@ -73,7 +73,11 @@ def get_kkt_loss(args, values, l, y, model):
         assert p.shape == grad.shape
         l = (p.detach().data - grad).pow(2).sum()
         kkt_loss += l
-    return kkt_loss
+    return kkt_loss 
+
+def get_primal_loss(args, values, y):
+    primal_loss = (-(torch.mul(values, y)) + args.margin).relu().pow(2).sum()
+    return primal_loss
 
 
 def get_verify_loss(args, x, l):
@@ -86,11 +90,12 @@ def get_verify_loss(args, x, l):
 
 
 def calc_extraction_loss(args, l, model, values, x, y):
-    kkt_loss, loss_verify = torch.tensor(0), torch.tensor(0)
+    kkt_loss, loss_verify, loss_primal = torch.tensor(0), torch.tensor(0), torch.tensor(0)
     if args.extraction_loss_type == 'kkt':
         kkt_loss = get_kkt_loss(args, values, l, y, model)
         loss_verify = get_verify_loss(args, x, l)
-        loss = kkt_loss + loss_verify
+        loss_primal = get_primal_loss(args, values, y)
+        loss = kkt_loss + loss_verify + 0.0 * loss_primal
 
     elif args.extraction_loss_type == 'naive':
         loss_naive = -(values[y == 1].mean() - values[y == -1].mean())
@@ -102,10 +107,10 @@ def calc_extraction_loss(args, l, model, values, x, y):
     else:
         raise ValueError(f'unknown args.extraction_loss_type={args.extraction_loss_type}')
 
-    return loss, kkt_loss, loss_verify
+    return loss, kkt_loss, loss_verify, loss_primal
 
 
-def evaluate_extraction(args, epoch, loss_extract, loss_verify, x, x0, y0, ds_mean):
+def evaluate_extraction(args, epoch, loss_extract, loss_verify, loss_primal, x, x0, y0, ds_mean):
     x_grad = x.grad.clone().data
     x = x.clone().data
     if args.wandb_active:
@@ -148,6 +153,6 @@ def evaluate_extraction(args, epoch, loss_extract, loss_verify, x, x0, y0, ds_me
             "extraction dssim": wandb.Image(dssim_grid),
         })
 
-    print(f'{now()} T={epoch} ; Losses: extract={loss_extract.item():5.10g} verify={loss_verify.item():5.5g} grads={x_grad.abs().mean()} Extraction-Score={extraction_score} Extraction-DSSIM={dssim_score}')
+    print(f'{now()} T={epoch} ; Losses: extract={loss_extract.item():5.10g} verify={loss_verify.item():5.5g} primal={loss_primal.item():5.10g} grads={x_grad.abs().mean()} Extraction-Score={extraction_score} Extraction-DSSIM={dssim_score}')
 
     return extraction_score

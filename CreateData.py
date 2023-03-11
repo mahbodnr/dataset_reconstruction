@@ -8,6 +8,15 @@ def setup_problem(args):
     elif args.problem == 'mnist_odd_even':
         from problems.mnist_odd_even import get_dataloader
         return get_dataloader(args)
+
+    elif args.problem == 'mnist_odd_even_noisy_background':
+        from problems.mnist_odd_even_noisy_background import get_dataloader
+        return get_dataloader(args)
+
+    elif args.problem == 'cifar10_noisy_background':
+        from problems.cifar10_noisy_background import get_dataloader
+        return get_dataloader(args)
+
     else:
         raise ValueError(f'Unknown args.problem={args.problem}')
     return data_loader
