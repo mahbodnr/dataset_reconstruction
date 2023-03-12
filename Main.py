@@ -82,6 +82,19 @@ def train(args, train_loader, test_loader, val_loader, model):
     print("Model:")
     print(model)
 
+    if args.wandb_active:
+        # defie epochs as a metric to use as x axis in plots
+        wandb.define_metric("epoch")
+        wandb.define_metric("train loss", step_metric="epoch")
+        wandb.define_metric("train error", step_metric="epoch")
+        wandb.define_metric("p-val", step_metric="epoch")
+        wandb.define_metric("p-std", step_metric="epoch")
+        wandb.define_metric("test loss", step_metric="epoch")
+        wandb.define_metric("test error", step_metric="epoch")
+        if val_loader is not None:
+            wandb.define_metric("validation loss", step_metric="epoch")
+            wandb.define_metric("validation error", step_metric="epoch")
+
     # Handle Reduce Mean
     if args.data_reduce_mean:
         print("Reducing Trainset-Mean from Trainset and Testset")
@@ -128,6 +141,8 @@ def train(args, train_loader, test_loader, val_loader, model):
                         "train error": train_error,
                         "p-val": output.abs().mean(),
                         "p-std": output.abs().std(),
+                        "test loss": test_loss,
+                        "test error": test_error,
                     }
                 )
                 if val_loader is not None:
@@ -137,7 +152,6 @@ def train(args, train_loader, test_loader, val_loader, model):
                             "validation error": validation_error,
                         }
                     )
-                wandb.log({"test loss": test_loss, "test error": test_error})
 
         if np.isnan(train_loss):
             raise ValueError("Optimizer diverged")
@@ -294,8 +308,6 @@ def setup_args(args):
     if args.wandb_active:
         wandb.init(project=args.wandb_project_name, entity=args.wandb_entity)
         wandb.config.update(args)
-
-    if args.wandb_active:
         args.output_dir = wandb.run.dir
     else:
         import dateutil.tz
