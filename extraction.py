@@ -95,7 +95,7 @@ def calc_extraction_loss(args, l, model, values, x, y):
         kkt_loss = get_kkt_loss(args, values, l, y, model)
         loss_verify = get_verify_loss(args, x, l)
         loss_primal = get_primal_loss(args, values, y)
-        loss = kkt_loss + loss_verify + 0.0 * loss_primal
+        loss = kkt_loss + loss_verify + 0.01 * loss_primal
 
     elif args.extraction_loss_type == 'naive':
         loss_naive = -(values[y == 1].mean() - values[y == -1].mean())
