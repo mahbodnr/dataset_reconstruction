@@ -50,8 +50,8 @@ def get_args(*args):
     parser.add_argument('--data_reduce_mean', default='true', type=str2bool, help='')
     parser.add_argument('--bias_type', default='contrast', type=str, help='options: square, contrast')
     parser.add_argument('--noise_mode', default='fixed_squares', type=str, help='options: fixed_squares, non_fixed_squares')
-    parser.add_argument('--contrast_factor_1', default=0.1)
-    parser.add_argument('--contrast_factor_2', default=0.6)
+    parser.add_argument('--contrast_factor_1', default=0.1, type=float)
+    parser.add_argument('--contrast_factor_2', default=0.6, type=float)
     parser.add_argument('--noise_perc', default=1.0, type=float, help='percentage of noisy images in the dataset')
 
 
