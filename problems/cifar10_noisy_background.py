@@ -188,11 +188,3 @@ Xtrn, Ytrn = next(iter(train_loader))
 ds_mean = Xtrn.mean(dim=0, keepdims=True)
 Xtrn = Xtrn - ds_mean
 train_loader = [(Xtrn, Ytrn)]
-
-for step, (x, y) in enumerate(train_loader):
-    for iii in range(20):
-        plt.figure(figsize=(2,2))
-        plt.imshow(x[iii].permute(2,1,0))
-        plt.show()
-        print(x[iii].shape)
-        # break    
