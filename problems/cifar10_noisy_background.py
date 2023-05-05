@@ -14,6 +14,7 @@ import wandb
 
 
 
+
 def setup_args(args):
     args.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -137,7 +138,9 @@ def get_balanced_data(args, data_loader, data_amount, train):
         elif args.bias_type == 'contrast':
             for ii in range(n_images):
                     if y0[ii] == 0:
-                        x0[ii] = F.adjust_contrast(x0[ii], args.contrast_factor)
+                        x0[ii] = F.adjust_contrast(x0[ii], args.contrast_factor_1)
+                    elif y0[ii] == 1:
+                        x0[ii] = F.adjust_contrast(x0[ii], args.contrast_factor_2)   
 
     return x0, y0
 
@@ -180,11 +183,19 @@ def get_dataloader(args):
     data_loader = load_cifar10_data(args)
     return data_loader
 
-args = get_args(sys.argv[1:])
-args = setup_args(args)
-train_loader, test_loader, val_loader = get_dataloader(args)
+# args = get_args(sys.argv[1:])
+# args = setup_args(args)
+# train_loader, test_loader, val_loader = get_dataloader(args)
 
-Xtrn, Ytrn = next(iter(train_loader))
-ds_mean = Xtrn.mean(dim=0, keepdims=True)
-Xtrn = Xtrn - ds_mean
-train_loader = [(Xtrn, Ytrn)]
+# Xtrn, Ytrn = next(iter(train_loader))
+# ds_mean = Xtrn.mean(dim=0, keepdims=True)
+# Xtrn = Xtrn - ds_mean
+# train_loader = [(Xtrn, Ytrn)]
+
+# for step, (x, y) in enumerate(train_loader):
+#     for iii in range(20):
+#         plt.figure(figsize=(2,2))
+#         plt.imshow(x[iii].permute(2,1,0))
+#         plt.show()
+#         print(x[iii].shape)
+#         # break    
