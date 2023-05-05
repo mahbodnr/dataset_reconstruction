@@ -1,6 +1,7 @@
 import torch
 import torchvision.datasets
 import torchvision.transforms
+import torchvision.transforms.functional as F
 import sys
 import os
 import datetime
@@ -8,6 +9,8 @@ import numpy as np
 import torch
 from GetParams import get_args
 import matplotlib.pyplot as plt
+import random
+
 
 
 
@@ -106,19 +109,36 @@ def get_balanced_data(args, data_loader, data_amount, train):
 
     if train == True:
         n_images = y0.shape[0]
-        n_noisy_images = int(args.noise_perc*n_images)
-        for ii in range(n_noisy_images):
-            if y0[ii] == 0:
-                x0[ii, :, 0:3, 0:3] = 0
-                # x0[ii, 0, -3:, :] = 0.25
-                # x0[ii, 0, :, 0:3] = 0.25
-                # x0[ii, 0, :, -3:] = 0.25
+        if args.bias_type == 'square':
+            # n_images = y0.shape[0]
+            n_noisy_images = int(args.noise_perc*n_images)
+            if args.noise_mode == 'fixed_squares':
+                for ii in range(n_noisy_images):
+                    if y0[ii] == 0:
+                        x0[ii, :, 0:3, 0:3] = 0
 
-            elif y0[ii] == 1:
-                x0[ii, :, 0:3, 0:3] = 1
-                # x0[ii, 0, -3:, :] = 0.75
-                # x0[ii, 0, :, 0:3] = 0.75
-                # x0[ii, 0, :, -3:] = 0.75    
+                    elif y0[ii] == 1:
+                        x0[ii, :, 0:3, 0:3] = 1
+            elif args.noise_mode == 'non_fixed_squares':
+                random.seed(40)
+                clue_pos = random.sample(range(1, 29), 20)
+                class1_pos = clue_pos[2:7]
+                print('class 1 clue positions: ', class1_pos)
+                class2_pos = clue_pos[10:15]
+                print('class 2 clue positions: ', class2_pos)
+                for ii in range(n_noisy_images):
+                    if y0[ii] == 0:
+                        pos = class1_pos[ii % 5]
+                        x0[ii, :, pos:pos+3, pos:pos+3] = 0
+
+                    elif y0[ii] == 1:
+                        pos = class2_pos[ii % 5]
+                        x0[ii, :, pos:pos+3, pos:pos+3] = 1
+
+        elif args.bias_type == 'contrast':
+            for ii in range(n_images):
+                    if y0[ii] == 0:
+                        x0[ii] = F.adjust_contrast(x0[ii], args.contrast_factor)
 
     return x0, y0
 
@@ -161,18 +181,19 @@ def get_dataloader(args):
     data_loader = load_cifar10_data(args)
     return data_loader
 
-# args = get_args(sys.argv[1:])
-# args = setup_args(args)
+args = get_args(sys.argv[1:])
+args = setup_args(args)
+train_loader, test_loader, val_loader = get_dataloader(args)
 
-# train_loader, test_loader, val_loader = get_dataloader(args)
+Xtrn, Ytrn = next(iter(train_loader))
+ds_mean = Xtrn.mean(dim=0, keepdims=True)
+Xtrn = Xtrn - ds_mean
+train_loader = [(Xtrn, Ytrn)]
 
-# # Xtrn, Ytrn = next(iter(train_loader))
-# # ds_mean = Xtrn.mean(dim=0, keepdims=True)
-# # Xtrn = Xtrn - ds_mean
-# # train_loader = [(Xtrn, Ytrn)]
-
-# for step, (x, y) in enumerate(train_loader):
-#     for iii in range(20):
-#         plt.imshow(x[iii].permute(2,1,0))
-#         plt.show()
-#     break    
+for step, (x, y) in enumerate(train_loader):
+    for iii in range(20):
+        plt.figure(figsize=(2,2))
+        plt.imshow(x[iii].permute(2,1,0))
+        plt.show()
+        print(x[iii].shape)
+        # break    
