@@ -21,37 +21,37 @@ def get_args(*args):
     parser = argparse.ArgumentParser(description='')
 
     # general parameters
-    parser.add_argument('--cuda', default='false', type=str2bool, help='')
+    parser.add_argument('--cuda', default='true', type=str2bool, help='')
     parser.add_argument('--seed', default=1, type=int, help='')
     parser.add_argument('--proj_name', default='', help='description of run, for saving stuff')
     parser.add_argument('--precision', default='double', help='')
-    parser.add_argument('--run_mode', default='train', help='options: train, reconstruct', choices=['train', 'reconstruct'])
+    parser.add_argument('--run_mode', default='reconstruct', help='options: train, reconstruct', choices=['train', 'reconstruct'])
 
     # files
     # parser.add_argument('--datasets_dir', default='datasets', help='this is loaded from settings.py')
     # parser.add_argument('--results_base_dir', default='./', help='this is loaded from settings.py')
-    parser.add_argument('--pretrained_model_path', default=r'', help='path to pretrained model (ignored if empty)')
+    parser.add_argument('--pretrained_model_path', default='', help='path to pretrained model (ignored if empty)')
     parser.add_argument('--train_save_model', default='true', type=str2bool, help='')
     parser.add_argument('--train_save_model_every', default=300, type=int, help='only saves if >0')
     parser.add_argument('--extract_save_results', default='true', type=str2bool, help='')
-    parser.add_argument('--extract_save_results_every', default=5000, type=int, help='only saves if >0')
+    parser.add_argument('--extract_save_results_every', default=2500, type=int, help='only saves if >0')
     parser.add_argument('--save_args_files', default='true', type=str2bool, help='')
 
     # wandb
-    parser.add_argument('--wandb_active', default='false', type=str2bool, help='actviate wandb logging')
+    parser.add_argument('--wandb_active', default='true', type=str2bool, help='actviate wandb logging')
     parser.add_argument('--wandb_project_name', default='Dataset_Extraction', help='')
-    parser.add_argument('--wandb_entity', default='dataset_extraction', help='')
+    parser.add_argument('--wandb_entity', default='mahbod', help='')
 
     # data creation
     parser.add_argument('--problem', default='cifar10_noisy_background', help='')
-    parser.add_argument('--data_per_class_train', default=50, type=int, help='')
+    parser.add_argument('--data_per_class_train', default=250, type=int, help='')
     parser.add_argument('--data_per_class_val', default=0,type=int, help='')
     parser.add_argument('--data_per_class_test', default=1000, type=int, help='')
     parser.add_argument('--data_reduce_mean', default='true', type=str2bool, help='')
-    parser.add_argument('--bias_type', default='contrast', type=str, help='options: square, contrast')
+    parser.add_argument('--bias_type', default='square', type=str, help='options: square, contrast')
     parser.add_argument('--noise_mode', default='fixed_squares', type=str, help='options: fixed_squares, non_fixed_squares')
-    parser.add_argument('--contrast_factor_1', default=0.1, type=float)
-    parser.add_argument('--contrast_factor_2', default=0.6, type=float)
+    parser.add_argument('--contrast_factor_1', default=0.5)
+    parser.add_argument('--contrast_factor_2', default=2)
     parser.add_argument('--noise_perc', default=1.0, type=float, help='percentage of noisy images in the dataset')
 
 
@@ -75,7 +75,7 @@ def get_args(*args):
     # extraction
     parser.add_argument('--extraction_epochs', default=50000, type=int, help='')
     parser.add_argument('--margin', default=9.5, type=float, help='training data margin')
-    parser.add_argument('--extraction_data_amount_per_class', default=100, type=int, help='0 = same as data_amount')
+    parser.add_argument('--extraction_data_amount_per_class', default=500, type=int, help='0 = same as data_amount')
     parser.add_argument('--extraction_model_activation', default='modifiedrelu', help='options: same as model_train_activation')
     parser.add_argument('--extraction_model_relu_alpha', default=149.86555429083975, type=float, help='')
     parser.add_argument('--extraction_init_scale', default=0.03497673778414215, type=float, help='')
