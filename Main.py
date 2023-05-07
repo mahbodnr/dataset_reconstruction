@@ -14,6 +14,8 @@ from CreateModel import create_model
 from extraction import calc_extraction_loss, evaluate_extraction, get_trainable_params
 from GetParams import get_args
 
+from analysis import *
+
 thread_limit = threadpoolctl.threadpool_limits(limits=8)
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
@@ -194,6 +196,7 @@ def data_extraction(args, dataset_loader, model):
     if args.data_reduce_mean:
         ds_mean = x0.mean(dim=0, keepdims=True)
         x0 = x0 - ds_mean
+    best_ssim = 0
 
     # # send inputs to wandb/notebook
     # if args.wandb_active:
@@ -268,6 +271,19 @@ def data_extraction(args, dataset_loader, model):
                     os.path.join(args.output_dir, "l", f"{epoch}_l.pth"),
                     base_path=args.wandb_base_path,
                 )
+                # Find Nearest Neighbour
+                xx1 = find_nearest_neighbour(x.double(), x0.double(), search='ncc', vote='min', use_bb=False, nn_threshold=None)
+                # Scale to Images
+                xx_scaled, yy_scaled = scale(xx1, x0, ds_mean)
+                # # Sort
+                xx, yy, ssims, sort_idxs = sort_by_metric(xx_scaled, yy_scaled, sort='ssim')
+                
+                ssim_top10= torch.mean(torch.topk(ssims, 10)[0])
+                wandb.log({"ssim_top10": ssim_top10})
+                if ssim_top10 > best_ssim:
+                    best_ssim = ssim_top10
+    wandb.log({"best_ssim": best_ssim})
+
 
 
 ###############################################################################
