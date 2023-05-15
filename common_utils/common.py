@@ -58,10 +58,18 @@ def save_weights(dirpath, model, epoch=None, batch=None, ext_text=None):
     )
     print("saved weights to:", weights_fpath)
     shutil.copyfile(weights_fpath, os.path.join(dirpath, "latest.th"))
+    # save the path to pre_trained_weights.txt (create if not exists)
+    with open("./pre_trained_weights.txt", "a") as f:
+        f.write(weights_fpath + "\n")
     return weights_fpath
 
 
 def load_weights(model, fpath, device="cuda"):
+    # if fpath is empty, read the last line of pre_trained_weights.txt
+    if not fpath:
+        print("fpath is empty, read the last line of pre_trained_weights.txt")
+        with open("./pre_trained_weights.txt", "r") as f:
+            fpath = f.readlines()[-1].strip()
     print("loading weights '{}'".format(fpath))
     weights = torch.load(fpath, map_location=device)
 
