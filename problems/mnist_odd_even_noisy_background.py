@@ -1,6 +1,7 @@
 import torch
 import torchvision.datasets
 import torchvision.transforms
+import torchvision.transforms.functional as F
 import sys
 import os
 import datetime
@@ -8,38 +9,9 @@ import numpy as np
 import torch
 from GetParams import get_args
 import matplotlib.pyplot as plt
+import random
 
 
-def setup_args(args):
-    args.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-    from settings import datasets_dir, models_dir, results_base_dir
-    args.results_base_dir = results_base_dir
-    args.datasets_dir = datasets_dir
-    if args.pretrained_model_path:
-        args.pretrained_model_path = os.path.join(models_dir, args.pretrained_model_path)
-    args.model_name = f'{args.problem}_d{args.data_per_class_train}'
-    if args.proj_name:
-        args.model_name += f'_{args.proj_name}'
-
-    torch.manual_seed(args.seed)
-
-    if args.wandb_active:
-        wandb.init(project=args.wandb_project_name, entity='dataset_reconsruction')
-        wandb.config.update(args)
-
-    if args.wandb_active:
-        args.output_dir = wandb.run.dir
-    else:
-        import dateutil.tz
-        timestamp = datetime.datetime.now(dateutil.tz.tzlocal()).strftime('%Y_%m_%d_%H_%M_%S')
-        run_name = f'{timestamp}_{np.random.randint(1e5, 1e6)}_{args.model_name}'
-        args.output_dir = os.path.join(args.results_base_dir, run_name)
-    print('OUTPUT_DIR:', args.output_dir)
-
-    args.wandb_base_path = './'
-
-    return args
 
 
 def load_bound_dataset(dataset, batch_size, shuffle=False, start=None, end=None, **kwargs):
@@ -80,7 +52,7 @@ def create_labels(y0):
     return y0
 
 
-def get_balanced_data(args, data_loader, data_amount):
+def get_balanced_data(args, data_loader, data_amount, train):
     print('BALANCING DATASET...')
     # get balanced data
     data_amount_per_class = data_amount // 2
@@ -101,36 +73,55 @@ def get_balanced_data(args, data_loader, data_amount):
         if got_enough:
             break
     x0, y0 = torch.stack(x0), torch.stack(y0)
-    n_images = y0.shape[0]
-    for ii in range(n_images):
-        if y0[ii] == 0:
-            x0[ii, 0, 0:3, 0:3] = 0.25
-            # x0[ii, 0, -3:, :] = 0.25
-            # x0[ii, 0, :, 0:3] = 0.25
-            # x0[ii, 0, :, -3:] = 0.25
 
-        elif y0[ii] == 1:
-            x0[ii, 0, 0:3, 0:3] = 0.75
-            # x0[ii, 0, -3:, :] = 0.75
-            # x0[ii, 0, :, 0:3] = 0.75
-            # x0[ii, 0, :, -3:] = 0.75    
 
-    # print('we are in get_balanced_data function')
-    # print('x0 shape:', x0.shape)
-    # print('y0 shape:', y0.shape[0])
+    if train == True:
+        n_images = y0.shape[0]
+        if args.bias_type == 'square':
+            n_noisy_images = int(args.noise_perc*n_images)
+            if args.noise_mode == 'fixed_squares':
+                for ii in range(n_noisy_images):
+                    if y0[ii] == 0:
+                        x0[ii, :, 0:3, 0:3] = 0.25
+
+                    elif y0[ii] == 1:
+                        x0[ii, :, 0:3, 0:3] = 0.75
+            elif args.noise_mode == 'non_fixed_squares':
+                random.seed(40)
+                clue_pos = random.sample(range(1, 29), 20)
+                class1_pos = clue_pos[2:5]
+                print('class 1 clue positions: ', class1_pos)
+                class2_pos = clue_pos[10:13]
+                print('class 2 clue positions: ', class2_pos)
+                for ii in range(n_noisy_images):
+                    if y0[ii] == 0:
+                        pos = class1_pos[ii % 3]
+                        x0[ii, :, pos:pos+3, pos:pos+3] = 0.25
+
+                    elif y0[ii] == 1:
+                        pos = class2_pos[ii % 3]
+                        x0[ii, :, pos:pos+3, pos:pos+3] = 1.75
+
+        elif args.bias_type == 'contrast':
+            for ii in range(n_images):
+                    if y0[ii] == 0:
+                        x0[ii] = F.adjust_contrast(x0[ii], args.contrast_factor_1)
+                    elif y0[ii] == 1:
+                        x0[ii] = F.adjust_contrast(x0[ii], args.contrast_factor_2)   
+
     return x0, y0
 
 
 def load_mnist_data(args):
     # Get Train Set
     data_loader = load_mnist(root=args.datasets_dir, batch_size=100, train=True, shuffle=False, start=0, end=50000)
-    x0, y0 = get_balanced_data(args, data_loader, args.data_amount)
+    x0, y0 = get_balanced_data(args, data_loader, args.data_amount, train=True)
 
     # Get Test Set
     print('LOADING TESTSET')
     assert not args.data_use_test or (args.data_use_test and args.data_test_amount >= 2), f"args.data_use_test={args.data_use_test} but args.data_test_amount={args.data_test_amount}"
     data_loader = load_mnist(root=args.datasets_dir, batch_size=100, train=False, shuffle=False, start=0, end=10000)
-    x0_test, y0_test = get_balanced_data(args, data_loader, args.data_test_amount)
+    x0_test, y0_test = get_balanced_data(args, data_loader, args.data_test_amount, train=False)
 
     # move to cuda and double
     x0, y0 = move_to_type_device(x0, y0, args.device)
@@ -159,30 +150,3 @@ def get_dataloader(args):
     return data_loader
 
   
-
-
-
-args = get_args(sys.argv[1:])
-args = setup_args(args)
-print(args)
-
-train_loader, test_loader, val_loader = get_dataloader(args)
-
-# Xtrn, Ytrn = next(iter(train_loader))
-# ds_mean = Xtrn.mean(dim=0, keepdims=True)
-# Xtrn = Xtrn - ds_mean
-# train_loader = [(Xtrn, Ytrn)]
-
-# for step, (x, y) in enumerate(train_loader):
-#     for iii in [21,22,23,24,25,26,56,45,32]:
-#         plt.imshow(x[iii].permute(2,1,0))
-#         plt.show()
-#     break
-# x_paths = [
-#     r'C:\Users\Mahdi\Desktop\University\Image Reconstruction Project\13200_x.pth',
-# ]
-# X = torch.cat([torch.load(x_paths[0])])
-# for i in range(20):
-#     plt.figure()
-#     plt.imshow(X[i].permute(2,1,0).detach().numpy())
-#     plt.show()
