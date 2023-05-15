@@ -88,10 +88,10 @@ def get_balanced_data(args, data_loader, data_amount, train):
                         x0[ii, :, 0:3, 0:3] = 0.75
             elif args.noise_mode == 'non_fixed_squares':
                 random.seed(40)
-                clue_pos = random.sample(range(1, 29), 20)
-                class1_pos = clue_pos[2:5]
+                clue_pos = random.sample(range(1, 25), 10)
+                class1_pos = clue_pos[0:3]
                 print('class 1 clue positions: ', class1_pos)
-                class2_pos = clue_pos[10:13]
+                class2_pos = clue_pos[-3:]
                 print('class 2 clue positions: ', class2_pos)
                 for ii in range(n_noisy_images):
                     if y0[ii] == 0:
