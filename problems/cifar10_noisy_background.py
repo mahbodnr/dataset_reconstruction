@@ -120,19 +120,19 @@ def get_balanced_data(args, data_loader, data_amount, train):
                     elif y0[ii] == 1:
                         x0[ii, :, 0:3, 0:3] = 1
             elif args.noise_mode == 'non_fixed_squares':
-                random.seed(40)
-                clue_pos = random.sample(range(1, 29), 20)
-                class1_pos = clue_pos[2:5]
+                random.seed(92.48) # Hala madrid
+                clue_pos = random.sample(range(1, 29), 2*args.n_squares)
+                class1_pos = clue_pos[:args.n_squares]
                 print('class 1 clue positions: ', class1_pos)
-                class2_pos = clue_pos[10:13]
+                class2_pos = clue_pos[args.n_squares:]
                 print('class 2 clue positions: ', class2_pos)
                 for ii in range(n_noisy_images):
                     if y0[ii] == 0:
-                        pos = class1_pos[ii % 3]
+                        pos = class1_pos[ii % args.n_squares]
                         x0[ii, :, pos:pos+3, pos:pos+3] = 0
 
                     elif y0[ii] == 1:
-                        pos = class2_pos[ii % 3]
+                        pos = class2_pos[ii % args.n_squares]
                         x0[ii, :, pos:pos+3, pos:pos+3] = 1
 
         elif args.bias_type == 'contrast':
