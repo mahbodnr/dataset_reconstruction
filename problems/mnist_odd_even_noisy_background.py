@@ -89,9 +89,9 @@ def get_balanced_data(args, data_loader, data_amount, train):
             elif args.noise_mode == 'non_fixed_squares':
                 random.seed(92.48) # Hala madrid
                 clue_pos = random.sample(range(1, 25), 2*args.n_squares)
-                class1_pos = clue_pos[0:3]
+                class1_pos = clue_pos[0:args.n_squares]
                 print('class 1 clue positions: ', class1_pos)
-                class2_pos = clue_pos[-3:]
+                class2_pos = clue_pos[args.n_squares:]
                 print('class 2 clue positions: ', class2_pos)
                 for ii in range(n_noisy_images):
                     if y0[ii] == 0:
