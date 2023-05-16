@@ -32,7 +32,7 @@ def get_args(*args):
     # parser.add_argument('--results_base_dir', default='./', help='this is loaded from settings.py')
     parser.add_argument('--pretrained_model_path', default='', help='path to pretrained model (ignored if empty)')
     parser.add_argument('--train_save_model', default='true', type=str2bool, help='')
-    parser.add_argument('--train_save_model_every', default=300, type=int, help='only saves if >0')
+    parser.add_argument('--train_save_model_every', default=10_000, type=int, help='only saves if >0')
     parser.add_argument('--extract_save_results', default='true', type=str2bool, help='')
     parser.add_argument('--extract_save_results_every', default=2500, type=int, help='only saves if >0')
     parser.add_argument('--save_args_files', default='true', type=str2bool, help='')
