@@ -100,7 +100,7 @@ def get_balanced_data(args, data_loader, data_amount, train):
 
                     elif y0[ii] == 1:
                         pos = class2_pos[ii % args.n_squares]
-                        x0[ii, :, pos:pos+3, pos:pos+3] = 1.75
+                        x0[ii, :, pos:pos+3, pos:pos+3] = 0.75
 
         elif args.bias_type == 'contrast':
             for ii in range(n_images):
