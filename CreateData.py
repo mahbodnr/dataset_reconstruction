@@ -12,6 +12,8 @@ def setup_problem(args):
         from problems.cifar10_noisy_background import get_dataloader
     elif args.problem == 'tiny_imagenet':
         from problems.tiny_imagenet import get_dataloader
+    elif args.problem == 'tiny_imagenet_noisy_background':
+        from problems.tiny_imagenet_noisy_background import get_dataloader
     else:
         raise ValueError(f'Unknown args.problem={args.problem}')
     return get_dataloader(args)

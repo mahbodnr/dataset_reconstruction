@@ -40,10 +40,11 @@ def move_to_type_device(x, y, device):
     return x, y
 
 
-def create_labels(y0):
+def create_labels(x0, y0):
     labels_dict = {0: 0, 82: 1}
-    y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0 if cur_y in labels_dict.keys()])
-    return y0
+    x0 = torch.stack([x0[i] for i in range(len(x0)) if y0[i].item() in labels_dict])
+    y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0 if cur_y.item() in labels_dict])
+    return x0, y0
 
 
 def get_balanced_data(args, data_loader, data_amount):
@@ -52,11 +53,14 @@ def get_balanced_data(args, data_loader, data_amount):
     data_amount_per_class = data_amount // 2
 
     labels_counter = {1: 0, 0: 0}
+    label_classes = [0, 82]
     x0, y0 = [], []
     got_enough = False
     for bx, by in data_loader:
-        by = create_labels(by)
-        for i in range(len(bx)):
+        if not label_classes[0] in by and not label_classes[1] in by:
+            continue
+        bx, by = create_labels(bx, by)
+        for i in range(len(by)):
             if labels_counter[int(by[i])] < data_amount_per_class:
                 labels_counter[int(by[i])] += 1
                 x0.append(bx[i])
@@ -86,7 +90,8 @@ def load_tiny_imagenet_data(args):
     x0, y0 = move_to_type_device(x0, y0, args.device)
     x0_test, y0_test = move_to_type_device(x0_test, y0_test, args.device)
 
-    print(f'BALANCE: 0: {y0[y0 == 0].shape[0]}, 1: {y0[y0 == 1].shape[0]}')
+    print(f'TRAIN BALANCE: 0: {y0[y0 == 0].shape[0]}, 1: {y0[y0 == 1].shape[0]}')
+    print(f'TEST BALANCE: 0: {y0[y0 == 0].shape[0]}, 1: {y0[y0 == 1].shape[0]}')
 
     return [(x0, y0)], [(x0_test, y0_test)], None
 
