@@ -45,7 +45,7 @@ def move_to_type_device(x, y, device):
 
 def create_labels(y0):
     labels_dict = {0: 0, 82: 1}
-    y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0])
+    y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0 if cur_y in labels_dict.keys()])
     return y0
 
 
@@ -147,3 +147,31 @@ def get_dataloader(args):
 
     data_loader = load_tiny_imagenet_data(args)
     return data_loader
+
+
+if __name__ == "__main__":
+    import sys
+    import matplotlib.pyplot as plt
+    class Args:
+        pass
+
+    args = Args()
+    args.run_mode = "train"
+    args.data_per_class_train = 50
+    args.datasets_dir = "/content/tiny-imagenet-200"
+    args.device = 'cpu'
+    data_loader = get_dataloader(args)
+    train_loader, test_loader, val_loader = get_dataloader(args)
+
+    Xtrn, Ytrn = next(iter(train_loader))
+    ds_mean = Xtrn.mean(dim=0, keepdims=True)
+    Xtrn = Xtrn - ds_mean
+    train_loader = [(Xtrn, Ytrn)]
+
+    for step, (x, y) in enumerate(train_loader):
+        for iii in range(20):
+            plt.figure(figsize=(2,2))
+            plt.imshow(x[iii].permute(2,1,0))
+            plt.show()
+            print(x[iii].shape)
+            # break    
