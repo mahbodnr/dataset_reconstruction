@@ -42,7 +42,7 @@ def move_to_type_device(x, y, device):
 
 def create_labels(y0):
     labels_dict = {0: 0, 82: 1}
-    y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0])
+    y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0 if cur_y in labels_dict.keys()])
     return y0
 
 
