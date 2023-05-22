@@ -43,7 +43,7 @@ def move_to_type_device(x, y, device):
 
 
 def create_labels(x0, y0):
-    labels_dict = {0: 0, 82: 1}
+    labels_dict = {0: 0, 81: 1}
     x0 = torch.stack([x0[i] for i in range(len(x0)) if y0[i].item() in labels_dict])
     y0 = torch.stack([torch.tensor(labels_dict[int(cur_y)]) for cur_y in y0 if cur_y.item() in labels_dict])
     return x0, y0
@@ -56,7 +56,7 @@ def get_balanced_data(args, data_loader, data_amount, train):
     data_amount_per_class = data_amount // 2
 
     labels_counter = {1: 0, 0: 0}
-    label_classes = [0, 82]
+    label_classes = [0, 81]
     x0, y0 = [], []
     got_enough = False
     for bx, by in data_loader:
