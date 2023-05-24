@@ -22,7 +22,7 @@ def fetch_tiny_imagenet(root, train=False, transform=None, target_transform=None
     if train:
         root+= "/train"
     else:
-        root+= "/test"
+        root+= "/val"
     # Load the Tiny ImageNet dataset
     dataset = datasets.ImageFolder(root=root, transform=transform, target_transform=target_transform,)
     return dataset
@@ -60,7 +60,7 @@ def get_balanced_data(args, data_loader, data_amount, train):
     x0, y0 = [], []
     got_enough = False
     for bx, by in data_loader:
-        if not label_classes[0] in by and not label_classes[1] in by:
+        if (not label_classes[0] in by) and (not label_classes[1] in by):
             continue
         bx, by = create_labels(bx, by)
         for i in range(len(by)):
