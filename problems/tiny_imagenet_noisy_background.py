@@ -131,7 +131,7 @@ def load_tiny_imagenet_data(args):
     x0_test, y0_test = move_to_type_device(x0_test, y0_test, args.device)
 
     print(f'TRAIN BALANCE: 0: {y0[y0 == 0].shape[0]}, 1: {y0[y0 == 1].shape[0]}')
-    print(f'TEST BALANCE: 0: {y0[y0 == 0].shape[0]}, 1: {y0[y0 == 1].shape[0]}')
+    print(f'TEST BALANCE: 0: {y0_test[y0_test == 0].shape[0]}, 1: {y0_test[y0_test == 1].shape[0]}')
 
     return [(x0, y0)], [(x0_test, y0_test)], None
 
