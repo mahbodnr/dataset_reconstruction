@@ -277,9 +277,20 @@ def data_extraction(args, dataset_loader, model):
                 xx_scaled, yy_scaled = scale(xx1, x0, ds_mean)
                 # # Sort
                 xx, yy, ssims, sort_idxs = sort_by_metric(xx_scaled, yy_scaled, sort='ssim')
-                
+                unique_imgs = []
+                unique_recs = []
+                unique_ssim = []
+                for i, (rec, img) in enumerate(zip(xx, yy)):
+                    if img not in unique_imgs:
+                        unique_imgs.append(img)
+                        unique_recs.append(rec)
+                        unique_ssim.append(ssims[i])
+                unique_imgs = torch.stack(unique_imgs)
+                unique_recs = torch.stack(unique_recs)
+                unique_ssim = torch.tensor(unique_ssim)
                 ssim_top10= torch.mean(torch.topk(ssims, 10)[0])
-                wandb.log({"ssim_top10": ssim_top10})
+                unique_ssim_top10 = torch.mean(torch.topk(torch.tensor(unique_ssim), 10)[0])
+                wandb.log({"ssim_top10": ssim_top10, "unique_ssim": torch.mean(torch.tensor(unique_ssim)), "unique_ssim_top10": unique_ssim_top10})
                 if ssim_top10 > best_ssim:
                     best_ssim = ssim_top10
     wandb.log({"best_ssim": best_ssim})
