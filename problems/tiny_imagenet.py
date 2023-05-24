@@ -108,7 +108,7 @@ def get_dataloader(args):
     # for legacy:
     args.data_amount = args.data_per_class_train * args.num_classes
     args.data_use_test = True
-    args.data_test_amount = 100
+    args.data_test_amount = args.data_per_class_test * args.num_classes
 
     data_loader = load_tiny_imagenet_data(args)
     return data_loader
