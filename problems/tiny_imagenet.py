@@ -77,13 +77,13 @@ def get_balanced_data(args, data_loader, data_amount):
 def load_tiny_imagenet_data(args):
     # Get Train Set
     print('TRAINSET BALANCED')
-    data_loader = load_tiny_imagenet(root=args.datasets_dir, batch_size=100, train=True, shuffle=False, start=0, end=50000)
+    data_loader = load_tiny_imagenet(root=args.datasets_dir, batch_size=100, train=True, shuffle=False, start=0, end=None)
     x0, y0 = get_balanced_data(args, data_loader, args.data_amount)
 
     # Get Test Set (balanced)
     print('LOADING TESTSET')
     assert not args.data_use_test or (args.data_use_test and args.data_test_amount >= 2), f"args.data_use_test={args.data_use_test} but args.data_test_amount={args.data_test_amount}"
-    data_loader = load_tiny_imagenet(root=args.datasets_dir, batch_size=100, train=False, shuffle=False, start=0, end=10000)
+    data_loader = load_tiny_imagenet(root=args.datasets_dir, batch_size=100, train=False, shuffle=False, start=0, end=None)
     x0_test, y0_test = get_balanced_data(args, data_loader, args.data_test_amount)
 
     # move to cuda and double
