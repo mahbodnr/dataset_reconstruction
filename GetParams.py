@@ -43,6 +43,7 @@ def get_args(*args):
     parser.add_argument('--wandb_entity', default='mahbod', help='')
 
     # data creation
+    parser.add_argument('--n-class', default=2, type=int, help='Number of classes')
     parser.add_argument('--problem', default='cifar10_noisy_background', help='')
     parser.add_argument('--data_per_class_train', default=250, type=int, help='')
     parser.add_argument('--data_per_class_val', default=0,type=int, help='')

@@ -25,13 +25,19 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 def get_loss_ce(args, model, x, y):
     p = model(x)
     p = p.view(-1)
-    loss = torch.nn.BCEWithLogitsLoss()(p, y)
+    if args.n_class == 2:
+        loss = torch.nn.BCEWithLogitsLoss()(p, y)
+    else:
+        loss = torch.nn.CrossEntropyLoss()(p, y) # TODO: check if this is correct
     return loss, p
 
 
 def get_total_err(args, p, y):
     # BCEWithLogitsLoss needs 0,1
-    err = (p.sign().view(-1).add(1).div(2) != y).float().mean().item()
+    if args.n_class == 2:
+        err = (p.sign().view(-1).add(1).div(2) != y).float().mean().item()
+    else:
+        err = (p.argmax(dim=1) != y).float().mean().item()
     return err
 
 

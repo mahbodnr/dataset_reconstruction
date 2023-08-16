@@ -2,6 +2,8 @@
 def setup_problem(args):
     if False:
         pass
+    elif args.problem == 'cifar10':
+        from problems.cifar10 import get_dataloader
     elif args.problem == 'cifar10_vehicles_animals':
         from problems.cifar10_vehicles_animals import get_dataloader
     elif args.problem == 'mnist_odd_even':
